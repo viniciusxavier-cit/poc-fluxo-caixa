@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.4.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ConsolidadoDiario.Domain\ConsolidadoDiario.Domain.csproj" />
+    <ProjectReference Include="..\..\Lancamentos\Lancamentos.Domain\Lancamentos.Domain.csproj" />
+  </ItemGroup>
+</Project>
