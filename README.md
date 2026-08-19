@@ -56,129 +56,172 @@ A solução adota **Clean Architecture** com **DDD (Domain-Driven Design)**, sep
 ### Visão de Contexto (C4 Nível 1)
 
 ```mermaid
-C4Context
-    title Sistema de Fluxo de Caixa — Contexto
+flowchart TB
+    subgraph ext ["Sistemas Externos"]
+        ERP["ERP / PDV"]
+    end
 
-    Person(comerciante, "Comerciante", "Registra e consulta lançamentos e saldo diário")
+    subgraph sistema ["Sistema de Fluxo de Caixa"]
+        SYS["Fluxo de Caixa API<br/>Controle de lancamentos<br/>e consolidado diario"]
+    end
 
-    System(fluxoCaixa, "Sistema de Fluxo de Caixa", "Controla lançamentos financeiros e consolida saldo diário")
+    USER["Comerciante"]
 
-    System_Ext(erp, "ERP / PDV", "Sistemas externos que podem integrar via API")
+    USER -- "Registra lancamentos / Consulta consolidado [HTTP/REST]" --> SYS
+    ERP  -- "Integracao automatica [HTTP/REST]" --> SYS
 
-    Rel(comerciante, fluxoCaixa, "Registra lançamentos e consulta consolidado", "HTTP/REST")
-    Rel(erp, fluxoCaixa, "Integração automática de lançamentos", "HTTP/REST")
+    style SYS  fill:#1168bd,color:#fff,stroke:#0e5ba8
+    style USER fill:#08427b,color:#fff,stroke:#083f74
+    style ERP  fill:#666,color:#fff,stroke:#555
 ```
 
 ### Visão de Containers (C4 Nível 2)
 
 ```mermaid
-C4Container
-    title Sistema de Fluxo de Caixa — Containers
+flowchart TB
+    USER["Comerciante"]
 
-    Person(comerciante, "Comerciante")
+    subgraph sistema ["Sistema de Fluxo de Caixa"]
+        direction TB
 
-    System_Boundary(fluxoCaixa, "Sistema de Fluxo de Caixa") {
-        Container(lancamentosApi, "Lancamentos.API", ".NET 8 Minimal API", "Registra e consulta lançamentos. Permanece disponível mesmo com falha no consolidado.")
-        Container(consolidadoApi, "ConsolidadoDiario.API", ".NET 8 Minimal API", "Consulta saldo consolidado por data. Escalonável horizontalmente.")
-        ContainerDb(lancamentosDb, "lancamentos.db", "SQLite", "Armazena lançamentos de débito e crédito")
-        ContainerDb(consolidadoDb, "consolidado.db", "SQLite", "Armazena saldo consolidado por data")
-    }
+        subgraph lancSvc ["Servico de Lancamentos"]
+            LAPI["Lancamentos.API<br/>.NET 8 Minimal API<br/>JWT · Rate Limit"]
+            LDB[("lancamentos.db<br/>SQLite")]
+        end
 
-    Rel(comerciante, lancamentosApi, "POST/GET/DELETE /lancamentos", "HTTP/REST")
-    Rel(comerciante, consolidadoApi, "GET /consolidado/{data}", "HTTP/REST")
-    Rel(lancamentosApi, lancamentosDb, "EF Core / SQLite", "")
-    Rel(lancamentosApi, consolidadoDb, "Domain Event (in-process MediatR)", "Atualiza consolidado após lançamento")
-    Rel(consolidadoApi, consolidadoDb, "EF Core / SQLite", "")
+        subgraph consSvc ["Servico de Consolidado"]
+            CAPI["ConsolidadoDiario.API<br/>.NET 8 Minimal API<br/>Cache 60s · Rate Limit"]
+            CDB[("consolidado.db<br/>SQLite")]
+        end
+    end
+
+    USER -- "POST/GET/DELETE /lancamentos [HTTP/REST + JWT]" --> LAPI
+    USER -- "GET /consolidado/{data} [HTTP/REST + JWT]"      --> CAPI
+    LAPI -- "EF Core"                                        --> LDB
+    LAPI -. "Domain Event - MediatR in-process"             .-> CAPI
+    CAPI -- "EF Core"                                        --> CDB
+
+    style LAPI fill:#1168bd,color:#fff,stroke:#0e5ba8
+    style CAPI fill:#1168bd,color:#fff,stroke:#0e5ba8
+    style LDB  fill:#438dd5,color:#fff,stroke:#3a7dc0
+    style CDB  fill:#438dd5,color:#fff,stroke:#3a7dc0
 ```
 
 ### Visão de Componentes — Lançamentos (C4 Nível 3)
 
 ```mermaid
-C4Component
-    title Lancamentos.API — Componentes internos
+flowchart LR
+    HTTP["HTTP<br/>Cliente"]
 
-    Container_Boundary(lancamentosApi, "Lancamentos.API") {
-        Component(endpoints, "LancamentosEndpoints", "Minimal API", "Mapeia rotas HTTP e delega ao MediatR")
-        Component(commands, "Commands / Handlers", "MediatR IRequestHandler", "CriarLancamentoCommand, RemoverLancamentoCommand")
-        Component(queries, "Queries / Handlers", "MediatR IRequestHandler", "GetLancamentoPorDataQuery, GetLancamentoPorIdQuery")
-        Component(aggregate, "Lancamento (Aggregate)", "DDD Aggregate Root", "Factory Criar(), publica Domain Events")
-        Component(events, "Domain Events", "MediatR INotification", "LancamentoCriadoEvent, LancamentoRemovidoEvent")
-        Component(repo, "LancamentoRepository", "EF Core", "Persiste e consulta lançamentos no SQLite")
-        Component(eventHandler, "AtualizarConsolidadoEventHandler", "MediatR INotificationHandler", "Atualiza consolidado após lançamento. Falha não derruba o serviço principal.")
-    }
+    subgraph api ["Lancamentos.API"]
+        direction TB
+        EP["Endpoints<br/>/lancamentos"]
+        AUTH["JWT<br/>Middleware"]
+    end
 
-    Rel(endpoints, commands, "Envia command")
-    Rel(endpoints, queries, "Envia query")
-    Rel(commands, aggregate, "Chama Lancamento.Criar()")
-    Rel(commands, repo, "AddAsync / Remove")
-    Rel(aggregate, events, "AddDomainEvent()")
-    Rel(commands, events, "IPublisher.Publish()")
-    Rel(events, eventHandler, "MediatR despacha")
-    Rel(queries, repo, "GetByIdAsync / GetByDataAsync")
+    subgraph app ["Lancamentos.Application - CQRS"]
+        direction TB
+        CMD["Commands<br/>CriarLancamento<br/>RemoverLancamento"]
+        QRY["Queries<br/>GetPorData<br/>GetPorId"]
+    end
+
+    subgraph domain ["Lancamentos.Domain - DDD"]
+        direction TB
+        AGG["Lancamento<br/>Aggregate Root<br/>+ Factory Criar()"]
+        EVT["Domain Events<br/>LancamentoCriado<br/>LancamentoRemovido"]
+    end
+
+    subgraph infra ["Lancamentos.Infrastructure"]
+        REPO["LancamentoRepository<br/>EF Core"]
+        DB[("lancamentos.db")]
+    end
+
+    subgraph consolidado ["ConsolidadoDiario.Application"]
+        HDL["AtualizarConsolidado<br/>EventHandler<br/>falha isolada"]
+    end
+
+    HTTP --> AUTH --> EP
+    EP   --> CMD & QRY
+    CMD  --> AGG --> EVT
+    CMD  --> REPO --> DB
+    QRY  --> REPO
+    EVT  -. "IPublisher.Publish()" .-> HDL
+
+    style AGG fill:#1168bd,color:#fff,stroke:#0e5ba8
+    style EVT fill:#9b59b6,color:#fff,stroke:#8e44ad
+    style HDL fill:#e67e22,color:#fff,stroke:#d35400
+    style DB  fill:#438dd5,color:#fff,stroke:#3a7dc0
 ```
 
 ### Fluxo de Criação de Lançamento
 
 ```mermaid
 sequenceDiagram
-    actor Cliente
-    participant API as Lancamentos.API
-    participant Handler as CriarLancamentoCommandHandler
-    participant Domain as Lancamento (Aggregate)
-    participant Repo as LancamentoRepository
-    participant DB1 as lancamentos.db
-    participant Publisher as IPublisher (MediatR)
-    participant EventHandler as AtualizarConsolidadoEventHandler
-    participant DB2 as consolidado.db
+    actor C  as Comerciante
+    participant A  as Lancamentos.API
+    participant H  as CommandHandler
+    participant D  as Lancamento
+    participant DB as lancamentos.db
+    participant P  as MediatR
+    participant EH as EventHandler
+    participant CD as consolidado.db
 
-    Cliente->>API: POST /lancamentos { tipo, valor, descricao, data }
-    API->>Handler: mediator.Send(CriarLancamentoCommand)
-    Handler->>Domain: Lancamento.Criar(tipo, valor, descricao, data)
-    Domain-->>Domain: AddDomainEvent(LancamentoCriadoEvent)
-    Handler->>Repo: AddAsync(lancamento)
-    Handler->>DB1: SaveChangesAsync() ✅ Lançamento persistido
-    Handler->>Publisher: Publish(LancamentoCriadoEvent)
-    Publisher->>EventHandler: Handle(LancamentoCriadoEvent)
-    
-    alt Consolidado disponível
-        EventHandler->>DB2: Upsert consolidado do dia
-        EventHandler-->>API: OK (silencioso)
-    else Consolidado indisponível / erro
-        EventHandler-->>EventHandler: log.Error(...) ⚠️ falha isolada
-        Note over EventHandler,DB2: Lançamento já foi salvo.<br/>Consolidado poderá ser<br/>recalculado depois.
+    C  ->>  A:  POST /lancamentos
+    A  ->>  H:  Send(CriarLancamentoCommand)
+    H  ->>  D:  Lancamento.Criar(...)
+    D  -->> H:  lançamento + LancamentoCriadoEvent
+
+    H  ->>  DB: SaveChangesAsync()
+    Note over DB: ✅ Lançamento persistido
+
+    H  ->>  P:  Publish(LancamentoCriadoEvent)
+    P  ->>  EH: Handle(event)
+
+    alt Consolidado OK
+        EH ->> CD: Upsert consolidado do dia
+    else Consolidado com falha
+        EH -->> EH: log.Error() — falha silenciosa
+        Note over EH,CD: ⚠️ O lançamento já foi salvo.\nConsolidado será corrigido depois.
     end
 
-    API-->>Cliente: 201 Created { id, tipo, valor, data }
+    A  -->> C:  201 Created
 ```
 
 ### Desacoplamento via Domain Events
 
 ```mermaid
 flowchart TD
-    A[Cliente HTTP] -->|POST /lancamentos| B[LancamentosEndpoints]
-    B -->|CriarLancamentoCommand| C[CriarLancamentoCommandHandler]
-    C -->|Lancamento.Criar| D[Aggregate Root]
-    D -->|AddDomainEvent| E[LancamentoCriadoEvent]
-    C -->|SaveChangesAsync| F[(lancamentos.db)]
-    C -->|IPublisher.Publish| G{MediatR in-memory}
-    G -->|INotificationHandler| H[AtualizarConsolidadoEventHandler]
-    H -->|try/catch isolado| I[(consolidado.db)]
-    
-    style F fill:#2ecc71,color:#fff
-    style I fill:#3498db,color:#fff
-    style G fill:#f39c12,color:#fff
-    style E fill:#9b59b6,color:#fff
-
-    subgraph Garantia de resiliência
-        F
-        note1[Lançamento persistido ANTES\ndo evento ser publicado]
+    subgraph req [Requisicao]
+        A[Cliente HTTP]
+        B[LancamentosEndpoints]
+        C[CriarLancamento CommandHandler]
+        D[Lancamento Aggregate]
+        E[LancamentoCriadoEvent]
     end
 
-    subgraph Atualização eventual
-        H
-        I
-        note2[Falha aqui não reverte\no lançamento]
+    subgraph per [Persistencia garantida]
+        F[(lancamentos.db)]
     end
+
+    subgraph eve [Atualizacao eventual]
+        G{MediatR in-memory}
+        H[AtualizarConsolidado EventHandler]
+        I[(consolidado.db)]
+    end
+
+    A -->|POST /lancamentos| B
+    B -->|CriarLancamentoCommand| C
+    C -->|Lancamento.Criar| D
+    D -->|AddDomainEvent| E
+    C -->|SaveChangesAsync| F
+    E -->|IPublisher.Publish| G
+    G -->|INotificationHandler| H
+    H -->|try/catch isolado| I
+
+    style F fill:#27ae60,color:#fff,stroke:#219a52
+    style I fill:#2980b9,color:#fff,stroke:#2471a3
+    style G fill:#f39c12,color:#fff,stroke:#e67e22
+    style E fill:#8e44ad,color:#fff,stroke:#7d3c98
 ```
 
 ### Modelo de Dados
