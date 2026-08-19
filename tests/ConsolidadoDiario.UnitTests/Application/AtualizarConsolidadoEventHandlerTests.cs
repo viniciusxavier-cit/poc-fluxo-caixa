@@ -3,6 +3,7 @@ using ConsolidadoDiario.Domain.Repositories;
 using ConsolidadoDiario.Infrastructure;
 using ConsolidadoDiario.Infrastructure.Persistence;
 using FluentAssertions;
+using Xunit;
 using Lancamentos.Domain.Events;
 using SharedKernel;
 using Microsoft.EntityFrameworkCore;

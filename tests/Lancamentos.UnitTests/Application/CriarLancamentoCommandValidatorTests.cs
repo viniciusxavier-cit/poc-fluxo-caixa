@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Lancamentos.Application.Commands.CriarLancamento;
 using SharedKernel;
+using Xunit;
 
 namespace Lancamentos.UnitTests.Application;
 

@@ -3,6 +3,7 @@ using Lancamentos.Application.Commands.RemoverLancamento;
 using Lancamentos.Domain.Entities;
 using Lancamentos.Domain.Repositories;
 using MediatR;
+using Xunit;
 using NSubstitute;
 using SharedKernel;
 

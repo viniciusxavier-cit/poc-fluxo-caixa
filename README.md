@@ -426,30 +426,35 @@ dotnet restore fluxocaixa.sln
 O serviço de Lançamentos também registra os event handlers do Consolidado — ambos os bancos são criados automaticamente na primeira execução.
 
 ```bash
-cd src/Lancamentos/Lancamentos.API
-dotnet run
+dotnet run --project src/Lancamentos/Lancamentos.API
 ```
 
 Acesse a documentação interativa em: **http://localhost:5092/swagger**
 
-### Rodar o serviço de Consolidado Diário (porta 5093 ou livre)
+### Rodar o serviço de Consolidado Diário (porta 5093)
 
 ```bash
-cd src/ConsolidadoDiario/ConsolidadoDiario.API
-dotnet run
+dotnet run --project src/ConsolidadoDiario/ConsolidadoDiario.API
 ```
 
 Acesse a documentação interativa em: **http://localhost:5093/swagger**
 
-### Rodar ambos com portas distintas
+### Rodar ambos simultaneamente (terminais separados)
 
 ```bash
 # Terminal 1
-dotnet run --project src/Lancamentos/Lancamentos.API --urls "http://localhost:5092"
+dotnet run --project src/Lancamentos/Lancamentos.API
 
 # Terminal 2
-dotnet run --project src/ConsolidadoDiario/ConsolidadoDiario.API --urls "http://localhost:5093"
+dotnet run --project src/ConsolidadoDiario/ConsolidadoDiario.API
 ```
+
+> **Atenção:** cada serviço possui seu próprio Swagger independente. O Swagger da Lançamentos API (`/swagger` na porta 5092) contém os endpoints de autenticação e lançamentos. O Swagger da Consolidado API (`/swagger` na porta 5093) contém apenas o endpoint de consolidado diário.
+
+> **Nota sobre `--urls`:** ao passar `--urls` explicitamente na linha de comando, o `launchSettings.json` é ignorado e o ambiente volta a ser `Production`, o que desativa o Swagger. Se precisar sobrescrever a porta, adicione `--environment Development`:
+> ```bash
+> dotnet run --project src/Lancamentos/Lancamentos.API --urls "http://localhost:5092" --environment Development
+> ```
 
 ### Autenticação — obter token JWT
 

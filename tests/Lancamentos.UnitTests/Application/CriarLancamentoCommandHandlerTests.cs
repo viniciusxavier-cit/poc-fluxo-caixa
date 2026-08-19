@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Lancamentos.Application.Commands.CriarLancamento;
+using Xunit;
 using Lancamentos.Domain.Entities;
 using Lancamentos.Domain.Repositories;
 using MediatR;

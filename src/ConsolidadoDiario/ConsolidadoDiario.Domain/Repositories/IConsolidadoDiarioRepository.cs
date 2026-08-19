@@ -1,10 +1,10 @@
-using ConsolidadoDiario.Domain.Entities;
+using ConsolidadoDiarioEntity = ConsolidadoDiario.Domain.Entities.ConsolidadoDiario;
 
 namespace ConsolidadoDiario.Domain.Repositories;
 
 public interface IConsolidadoDiarioRepository
 {
-    Task<ConsolidadoDiario?> GetByDataAsync(DateOnly data, CancellationToken cancellationToken = default);
-    Task AddAsync(ConsolidadoDiario consolidado, CancellationToken cancellationToken = default);
-    void Update(ConsolidadoDiario consolidado);
+    Task<ConsolidadoDiarioEntity?> GetByDataAsync(DateOnly data, CancellationToken cancellationToken = default);
+    Task AddAsync(ConsolidadoDiarioEntity consolidado, CancellationToken cancellationToken = default);
+    void Update(ConsolidadoDiarioEntity consolidado);
 }

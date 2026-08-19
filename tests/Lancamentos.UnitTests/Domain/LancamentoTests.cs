@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Lancamentos.Domain.Entities;
+using Xunit;
 using Lancamentos.Domain.Events;
 using Lancamentos.Domain.ValueObjects;
 using SharedKernel;
