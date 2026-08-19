@@ -1,5 +1,5 @@
 using Lancamentos.Application.DTOs;
-using Lancamentos.Domain.ValueObjects;
+using SharedKernel;
 using MediatR;
 
 namespace Lancamentos.Application.Commands.CriarLancamento;

@@ -20,6 +20,6 @@ public sealed class ConsolidadoDiarioRepository : IConsolidadoDiarioRepository
         CancellationToken cancellationToken = default) =>
         await _context.Consolidados.AddAsync(consolidado, cancellationToken);
 
-    public void Update(ConsolidadoDiario.Domain.Entities.ConsolidadoDiario consolidado) =>
-        _context.Consolidados.Update(consolidado);
+    public void Update(ConsolidadoDiario.Domain.Entities.ConsolidadoDiario consolidado) { }
+    // Change tracker detecta mudanças automaticamente em entidades carregadas com tracking
 }

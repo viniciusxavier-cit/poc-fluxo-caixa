@@ -12,7 +12,7 @@ public sealed class LancamentoRepository : ILancamentoRepository
     public LancamentoRepository(LancamentosDbContext context) => _context = context;
 
     public async Task<Lancamento?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        await _context.Lancamentos.FindAsync(new object[] { id }, cancellationToken);
+        await _context.Lancamentos.FindAsync([id], cancellationToken);
 
     public async Task<IReadOnlyList<Lancamento>> GetByDataAsync(DateOnly data, CancellationToken cancellationToken = default) =>
         await _context.Lancamentos

@@ -4,6 +4,7 @@ using ConsolidadoDiario.Domain.Repositories;
 using ConsolidadoDiario.Infrastructure;
 using ConsolidadoDiario.Infrastructure.Persistence;
 using ConsolidadoDiario.Infrastructure.Repositories;
+using FluentValidation;
 using Lancamentos.API.Endpoints;
 using Lancamentos.Application.Commands.CriarLancamento;
 using Lancamentos.Domain.Repositories;
@@ -15,6 +16,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 using SharedKernel.Auth;
+using SharedKernel.Behaviors;
+using SharedKernel.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,13 +54,19 @@ builder.Services.AddScoped<ILancamentoRepository, LancamentoRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IConsolidadoDiarioRepository, ConsolidadoDiarioRepository>();
 builder.Services.AddScoped<ConsolidadoDiario.Domain.Repositories.IConsolidadoUnitOfWork, ConsolidadoUnitOfWork>();
-builder.Services.AddScoped<ConsolidadoUnitOfWork>();
+
+// ── Validação ─────────────────────────────────────────────────────────────────
+builder.Services.AddValidatorsFromAssembly(typeof(CriarLancamentoCommandValidator).Assembly);
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // ── MediatR ───────────────────────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CriarLancamentoCommandHandler).Assembly);
     cfg.RegisterServicesFromAssembly(typeof(AtualizarConsolidadoEventHandler).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 // ── Rate Limiting (proteção dos endpoints) ────────────────────────────────────
@@ -84,10 +93,10 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 // ── Migrate / seed ────────────────────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
+await using (var scope = app.Services.CreateAsyncScope())
 {
-    scope.ServiceProvider.GetRequiredService<LancamentosDbContext>().Database.EnsureCreated();
-    scope.ServiceProvider.GetRequiredService<ConsolidadoDbContext>().Database.EnsureCreated();
+    await scope.ServiceProvider.GetRequiredService<LancamentosDbContext>().Database.EnsureCreatedAsync();
+    await scope.ServiceProvider.GetRequiredService<ConsolidadoDbContext>().Database.EnsureCreatedAsync();
 }
 
 // ── Middleware pipeline ───────────────────────────────────────────────────────
@@ -97,6 +106,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lançamentos API v1"));
 }
 
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseAuthentication();

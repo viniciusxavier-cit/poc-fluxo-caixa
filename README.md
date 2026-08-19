@@ -1,8 +1,8 @@
-# Fluxo de Caixa — Carrefour
+# Fluxo de Caixa
 
 Sistema de controle de fluxo de caixa diário para comerciantes, composto por dois serviços independentes: **Lançamentos** e **Consolidado Diário**.
 
-> Desafio técnico para a posição de Arquiteto de Software — Carrefour.
+> Desafio técnico para a posição de Arquiteto de Software.
 
 ---
 
@@ -261,8 +261,8 @@ erDiagram
 ## Estrutura da Solução
 
 ```
-carrefour/
-├── carrefour.sln
+fluxocaixa/
+├── fluxocaixa.sln
 ├── README.md
 ├── docs/
 │   └── adr/                         # Architectural Decision Records
@@ -418,7 +418,7 @@ dotnet --version
 ### Restaurar dependências
 
 ```bash
-dotnet restore carrefour.sln
+dotnet restore fluxocaixa.sln
 ```
 
 ### Rodar o serviço de Lançamentos (porta 5092)
@@ -569,10 +569,10 @@ curl http://localhost:5093/consolidado/2025-06-01 \
 
 ```bash
 # Rodar todos os testes
-dotnet test carrefour.sln
+dotnet test fluxocaixa.sln
 
 # Com relatório de cobertura (requer coverlet)
-dotnet test carrefour.sln --collect:"XPlat Code Coverage"
+dotnet test fluxocaixa.sln --collect:"XPlat Code Coverage"
 ```
 
 ### Cobertura de testes

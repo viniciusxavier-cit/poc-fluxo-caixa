@@ -2,7 +2,6 @@ using FluentAssertions;
 using Lancamentos.Application.Commands.RemoverLancamento;
 using Lancamentos.Domain.Entities;
 using Lancamentos.Domain.Repositories;
-using Lancamentos.Domain.ValueObjects;
 using MediatR;
 using NSubstitute;
 using SharedKernel;
@@ -50,7 +49,8 @@ public sealed class RemoverLancamentoCommandHandlerTests
     {
         _repository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Lancamento?)null);
 
-        try { await _handler.Handle(new RemoverLancamentoCommand(Guid.NewGuid()), CancellationToken.None); } catch { }
+        await _handler.Invoking(h => h.Handle(new RemoverLancamentoCommand(Guid.NewGuid()), CancellationToken.None))
+            .Should().ThrowAsync<KeyNotFoundException>();
 
         await _publisher.DidNotReceive().Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>());
     }

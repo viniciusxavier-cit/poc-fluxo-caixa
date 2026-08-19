@@ -3,7 +3,7 @@ using Lancamentos.Application.Commands.RemoverLancamento;
 using Lancamentos.Application.DTOs;
 using Lancamentos.Application.Queries.GetLancamentoPorData;
 using Lancamentos.Application.Queries.GetLancamentoPorId;
-using Lancamentos.Domain.ValueObjects;
+using SharedKernel;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

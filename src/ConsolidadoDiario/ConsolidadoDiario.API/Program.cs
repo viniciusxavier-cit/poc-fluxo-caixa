@@ -39,7 +39,6 @@ builder.Services.AddDbContext<ConsolidadoDbContext>(opt =>
 // ── Repositórios e UoW ────────────────────────────────────────────────────────
 builder.Services.AddScoped<IConsolidadoDiarioRepository, ConsolidadoDiarioRepository>();
 builder.Services.AddScoped<ConsolidadoDiario.Domain.Repositories.IConsolidadoUnitOfWork, ConsolidadoUnitOfWork>();
-builder.Services.AddScoped<ConsolidadoUnitOfWork>();
 
 // ── MediatR ───────────────────────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
@@ -70,8 +69,8 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 // ── Migrate / seed ────────────────────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
-    scope.ServiceProvider.GetRequiredService<ConsolidadoDbContext>().Database.EnsureCreated();
+await using (var scope = app.Services.CreateAsyncScope())
+    await scope.ServiceProvider.GetRequiredService<ConsolidadoDbContext>().Database.EnsureCreatedAsync();
 
 // ── Middleware pipeline ───────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())

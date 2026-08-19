@@ -4,7 +4,7 @@ using ConsolidadoDiario.Infrastructure;
 using ConsolidadoDiario.Infrastructure.Persistence;
 using FluentAssertions;
 using Lancamentos.Domain.Events;
-using Lancamentos.Domain.ValueObjects;
+using SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 

@@ -31,7 +31,8 @@ public static class ConsolidadoEndpoints
 
             var result = await mediator.Send(new GetConsolidadoPorDataQuery(data), ct);
 
-            cache.Set(cacheKey, result, TimeSpan.FromSeconds(CacheTtlSeconds));
+            if (result is not null)
+                cache.Set(cacheKey, result, TimeSpan.FromSeconds(CacheTtlSeconds));
 
             return result is null
                 ? Results.NotFound(new { mensagem = $"Nenhum consolidado encontrado para {data:yyyy-MM-dd}." })

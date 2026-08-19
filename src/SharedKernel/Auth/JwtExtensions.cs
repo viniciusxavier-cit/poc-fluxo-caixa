@@ -19,6 +19,7 @@ public static class JwtExtensions
 
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
+        ArgumentException.ThrowIfNullOrWhiteSpace(settings.Secret, nameof(settings.Secret));
         var key = Encoding.UTF8.GetBytes(settings.Secret);
 
         services

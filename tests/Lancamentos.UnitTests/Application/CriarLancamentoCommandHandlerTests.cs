@@ -2,7 +2,6 @@ using FluentAssertions;
 using Lancamentos.Application.Commands.CriarLancamento;
 using Lancamentos.Domain.Entities;
 using Lancamentos.Domain.Repositories;
-using Lancamentos.Domain.ValueObjects;
 using MediatR;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -112,7 +111,8 @@ public sealed class CriarLancamentoCommandHandlerTests
         var command = new CriarLancamentoCommand(
             TipoLancamento.Debito, 100m, "Pagamento", DateOnly.FromDateTime(DateTime.Today));
 
-        try { await _handler.Handle(command, CancellationToken.None); } catch { }
+        await _handler.Invoking(h => h.Handle(command, CancellationToken.None))
+            .Should().ThrowAsync<Exception>();
 
         await _publisher.DidNotReceive().Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>());
     }

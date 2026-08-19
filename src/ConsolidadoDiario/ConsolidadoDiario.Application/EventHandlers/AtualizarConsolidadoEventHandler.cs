@@ -34,13 +34,16 @@ public sealed class AtualizarConsolidadoEventHandler : INotificationHandler<Lanc
             }
 
             consolidado.AplicarLancamento(notification.Tipo, notification.Valor);
-            _repository.Update(consolidado);
 
             await _unitOfWork.CommitAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Consolidado de {Data} atualizado. Saldo: {Saldo}",
                 notification.Data, consolidado.Saldo);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

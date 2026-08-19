@@ -1,5 +1,5 @@
 using Lancamentos.Domain.Entities;
-using Lancamentos.Domain.ValueObjects;
+using SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

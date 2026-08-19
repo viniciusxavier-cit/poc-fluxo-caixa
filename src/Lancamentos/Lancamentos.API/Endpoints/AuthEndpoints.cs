@@ -24,10 +24,36 @@ public static class AuthEndpoints
         .WithTags("Autenticação")
         .WithName("GerarToken")
         .WithSummary("Gera token JWT")
-        .WithDescription("Retorna um token Bearer para uso nos demais endpoints. Usuários demo: `comerciante/senha123` ou `admin/admin123`.")
+        .WithDescription("Retorna um token Bearer. Usuários demo: `comerciante/senha123` ou `admin/admin123`.")
         .AllowAnonymous()
+        .AddEndpointFilter<LoginRequestValidator>()
         .WithOpenApi();
     }
 }
 
 public sealed record LoginRequest(string Usuario, string Senha);
+
+internal sealed class LoginRequestValidator : IEndpointFilter
+{
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext ctx, EndpointFilterDelegate next)
+    {
+        var req = ctx.GetArgument<LoginRequest>(0);
+
+        List<string> erros = [];
+        if (string.IsNullOrWhiteSpace(req.Usuario))
+            erros.Add("O campo 'usuario' é obrigatório.");
+        if (string.IsNullOrWhiteSpace(req.Senha))
+            erros.Add("O campo 'senha' é obrigatório.");
+
+        if (erros.Count > 0)
+            return Results.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    ["usuario"] = erros.Where(e => e.Contains("usuario")).ToArray(),
+                    ["senha"]   = erros.Where(e => e.Contains("senha")).ToArray()
+                },
+                title: "Dados inválidos");
+
+        return await next(ctx);
+    }
+}

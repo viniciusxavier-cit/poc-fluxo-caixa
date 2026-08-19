@@ -29,13 +29,16 @@ public sealed class RecalcularConsolidadoEventHandler : INotificationHandler<Lan
             if (consolidado is null) return;
 
             consolidado.EstornarLancamento(notification.Tipo, notification.Valor);
-            _repository.Update(consolidado);
 
             await _unitOfWork.CommitAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Consolidado de {Data} recalculado após remoção do lançamento {Id}.",
                 notification.Data, notification.LancamentoId);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

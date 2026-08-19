@@ -1,4 +1,4 @@
-namespace Lancamentos.Domain.ValueObjects;
+namespace SharedKernel;
 
 public enum TipoLancamento
 {

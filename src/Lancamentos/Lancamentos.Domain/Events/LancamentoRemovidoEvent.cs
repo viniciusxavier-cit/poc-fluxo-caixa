@@ -1,4 +1,3 @@
-using Lancamentos.Domain.ValueObjects;
 using SharedKernel;
 
 namespace Lancamentos.Domain.Events;
