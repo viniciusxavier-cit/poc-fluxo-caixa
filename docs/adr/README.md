@@ -30,6 +30,7 @@ Baseado no modelo de [Michael Nygard](https://cognitect.com/blog/2011/11/15/docu
 | [ADR-008](ADR-008-tipo-lancamento-tabela-dominio.md) | TipoLancamento como tabela de domínio no banco de dados | Aceito | 2025-06 |
 | [ADR-009](ADR-009-seguranca-jwt.md) | Autenticação com JWT Bearer | Aceito | 2025-06 |
 | [ADR-010](ADR-010-rate-limiting-cache-health.md) | Rate Limiting, Cache e Health Checks para 50 req/s | Aceito | 2025-06 |
+| [ADR-011](ADR-011-limitacoes-sharedkernel-poc.md) | Limitações do SharedKernel e acoplamento entre bounded contexts (POC) | Aceito (com ressalvas) | 2026-08 |
 
 ## Como criar um novo ADR
 
