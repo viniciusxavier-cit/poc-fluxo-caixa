@@ -2,8 +2,6 @@
 
 Sistema de controle de fluxo de caixa diário para comerciantes, composto por dois serviços independentes: **Lançamentos** e **Consolidado Diário**.
 
-> Desafio técnico para a posição de Arquiteto de Software.
-
 ---
 
 ## Sumário
