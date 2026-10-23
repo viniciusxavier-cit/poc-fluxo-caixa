@@ -20,6 +20,12 @@ public sealed class LancamentoRepository : ILancamentoRepository
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<Lancamento>> GetByIntervaloAsync(DateOnly dataInicio, DateOnly dataFim, CancellationToken cancellationToken = default) =>
+        await _context.Lancamentos
+            .Where(l => l.Data >= dataInicio && l.Data <= dataFim)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
     public async Task AddAsync(Lancamento lancamento, CancellationToken cancellationToken = default) =>
         await _context.Lancamentos.AddAsync(lancamento, cancellationToken);
 
